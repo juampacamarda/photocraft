@@ -28,7 +28,7 @@ pub fn show(app: &mut PhotocraftApp, ctx: &egui::Context) {
     // The palette sits opposite the drawing hand. Only this palette is mirrored; the full
     // desktop layout keeps its usual sides.
     let (palette_align, palette_offset) = if left_handed { (Align2::RIGHT_CENTER, vec2(-12.0, 0.0)) } else { (Align2::LEFT_CENTER, vec2(12.0, 0.0)) };
-    egui::Area::new(Id::new("drawing-tools")).order(Order::Foreground).anchor(palette_align, palette_offset).show(ctx, |ui| {
+    egui::Area::new(Id::unique("drawing-tools")).order(Order::Foreground).anchor(palette_align, palette_offset).show(ctx, |ui| {
         frame().show(ui, |ui| {
             ui.spacing_mut().item_spacing = vec2(4.0, 4.0);
             for tool in PALETTE_TOOLS {
@@ -45,7 +45,7 @@ pub fn show(app: &mut PhotocraftApp, ctx: &egui::Context) {
     // A small handle on the side opposite the palette returns to the full interface. The S Pen
     // button does the same thing; this is the touch fallback.
     let (handle_align, handle_offset) = if left_handed { (Align2::LEFT_TOP, vec2(12.0, 12.0)) } else { (Align2::RIGHT_TOP, vec2(-12.0, 12.0)) };
-    egui::Area::new(Id::new("drawing-exit")).order(Order::Foreground).anchor(handle_align, handle_offset).show(ctx, |ui| {
+    egui::Area::new(Id::unique("drawing-exit")).order(Order::Foreground).anchor(handle_align, handle_offset).show(ctx, |ui| {
         frame().show(ui, |ui| {
             let icon = if left_handed { "chevrons-right" } else { "chevrons-left" };
             let response = crate::icons::button(ui, icon, 36.0, false, tl!("Show/Hide All Panels"));
@@ -73,7 +73,7 @@ pub fn show(app: &mut PhotocraftApp, ctx: &egui::Context) {
     } else {
         (180.0, 150.0)
     };
-    egui::Area::new(Id::new("drawing-bar")).order(Order::Foreground).anchor(Align2::CENTER_BOTTOM, vec2(0.0, -14.0)).show(ctx, |ui| {
+    egui::Area::new(Id::unique("drawing-bar")).order(Order::Foreground).anchor(Align2::CENTER_BOTTOM, vec2(0.0, -14.0)).show(ctx, |ui| {
         frame().show(ui, |ui| {
             if compact {
                 ui.vertical(|ui| {
@@ -164,7 +164,7 @@ fn show_sheet(app: &mut PhotocraftApp, ctx: &egui::Context, frame: &impl Fn() ->
         (_, true) => (crate::dock::Group::Color, tl!("Color")),
         _ => return,
     };
-    egui::Area::new(Id::new("drawing-sheet"))
+    egui::Area::new(Id::unique("drawing-sheet"))
         .order(Order::Foreground)
         // Leave the right-edge tool palette visible beside the sheet.
         .anchor(Align2::RIGHT_CENTER, vec2(-68.0, 0.0))
