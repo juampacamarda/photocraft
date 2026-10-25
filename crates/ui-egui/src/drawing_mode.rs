@@ -116,7 +116,10 @@ fn quick_undo_redo(app: &mut PhotocraftApp, ui: &mut egui::Ui, ctx: &egui::Conte
 }
 
 fn quick_sliders(ui: &mut egui::Ui, size: &mut f32, opacity: &mut f32, size_width: f32, opacity_width: f32, height: f32) {
-    ui.add_sized([size_width, height], egui::Slider::new(size, 1.0..=500.0).show_value(true).text(tl!("Size")));
+    // The engine accepts 0.5..=5000 px, and the compact bar must not silently shrink an
+    // existing brush just because it was opened. `Edits` leaves a value outside this range
+    // alone until the user actually changes it.
+    ui.add_sized([size_width, height], egui::Slider::new(size, 0.5..=5000.0).clamping(egui::SliderClamping::Edits).show_value(true).text(tl!("Size")));
     let mut percent = *opacity * 100.0;
     if ui.add_sized([opacity_width, height], egui::Slider::new(&mut percent, 0.0..=100.0).show_value(true).text(tl!("Opacity"))).changed() {
         *opacity = percent / 100.0;
@@ -196,6 +199,7 @@ pub fn reset_sheets(ui: &mut DrawingModeUi) {
 
 #[cfg(test)]
 mod tests {
+    use super::quick_sliders;
 
     #[test]
     fn the_color_sheet_finds_the_color_tab_in_both_theme_layouts() {
@@ -204,5 +208,18 @@ mod tests {
             let color = groups.iter().position(|name| *name == "Color");
             assert_eq!(color, Some(if pro { 0 } else { 1 }));
         }
+    }
+
+    #[test]
+    fn opening_the_quick_bar_preserves_a_brush_larger_than_500() {
+        let mut size = 1200.0_f32;
+        let mut opacity = 1.0_f32;
+        let ctx = egui::Context::default();
+        let input = egui::RawInput { screen_rect: Some(egui::Rect::from_min_size(egui::Pos2::ZERO, egui::vec2(800.0, 600.0))), ..Default::default() };
+        let mut output = ctx.run_ui(input, |ui| {
+            quick_sliders(ui, &mut size, &mut opacity, 180.0, 150.0, 42.0);
+        });
+        output.textures_delta.clear();
+        assert_eq!(size, 1200.0);
     }
 }

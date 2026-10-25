@@ -1740,6 +1740,13 @@ mod tests {
         assert!(!app.session.prefs().interface.drawing_mode);
         assert_eq!(checked(&app, "view.drawingMode"), Some(false));
 
+        // Drawing Mode only puts a shell over the canvas. The saved desktop layout and the
+        // command surface underneath must survive entering and leaving it unchanged.
+        let workspace = app.ui.workspace.clone();
+        let panels = app.ui.panels.clone();
+        let dock_tabs = app.ui.dock_tabs;
+        let layers_enabled = is_enabled(&app, "window.toggle.layers");
+
         // The sheets are momentary: leaving the mode closes them, whichever way it was entered.
         app.ui.drawing.layers = true;
         app.ui.drawing.color = true;
@@ -1748,12 +1755,20 @@ mod tests {
         assert_eq!(checked(&app, "view.drawingMode"), Some(true));
         assert!(!app.ui.drawing.layers);
         assert!(!app.ui.drawing.color);
+        assert_eq!(app.ui.workspace, workspace);
+        assert_eq!(app.ui.panels, panels);
+        assert_eq!(app.ui.dock_tabs, dock_tabs);
+        assert_eq!(is_enabled(&app, "window.toggle.layers"), layers_enabled);
 
         app.ui.drawing.layers = true;
         invoke(&mut app, &ctx, "view.drawingMode", json!({})).unwrap();
         assert!(!app.session.prefs().interface.drawing_mode);
         assert_eq!(checked(&app, "view.drawingMode"), Some(false));
         assert!(!app.ui.drawing.layers);
+        assert_eq!(app.ui.workspace, workspace);
+        assert_eq!(app.ui.panels, panels);
+        assert_eq!(app.ui.dock_tabs, dock_tabs);
+        assert_eq!(is_enabled(&app, "window.toggle.layers"), layers_enabled);
     }
 
     #[test]
